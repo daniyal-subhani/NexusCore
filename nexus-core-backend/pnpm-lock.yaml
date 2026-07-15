@@ -235,6 +235,10 @@ importers:
         specifier: ^8.64.0
         version: 8.64.0(eslint@10.7.0)(typescript@6.0.3)
 
+  packages/common: {}
+
+  services/gateway-service: {}
+
 packages:
 
   '@eslint-community/eslint-utils@4.9.1':
