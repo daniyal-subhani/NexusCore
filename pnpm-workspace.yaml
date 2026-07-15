@@ -1,0 +1,5 @@
+packages:
+  - "nexus-core-backend/services/*"
+  - "nexus-core-backend/packages/*"
+allowBuilds:
+  esbuild: true
