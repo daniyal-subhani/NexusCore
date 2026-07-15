@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-export const env = {
-    NODE_ENV: process.env.NODE_ENV ?? "development",
-    PORT: Number(process.env.PORT ?? 4000)
-}
+export * from './env.js';
+export * from './logger.js';
+export * from './errors/http-error.js';
+export { z } from 'zod';
+export type { Logger } from 'pino';
