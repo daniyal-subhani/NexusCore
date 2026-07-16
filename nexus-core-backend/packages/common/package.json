@@ -1,5 +1,5 @@
 {
-  "name": "@nexus/common",
+  "name": "@nexus-core/common",
   "version": "1.0.0",
   "description": "Shared itilities: env validation, logging, error types, HTTP helpers",
   "main": "./dist/index.js",
@@ -9,13 +9,12 @@
     "types": "./dist/index.d.ts",
     "import": "./dist/index.js"
   },
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier --check \"src/**/*.ts\""
-  },
+ "scripts": {
+  "build": "tsup && tsc --project tsconfig.json --emitDeclarationOnly --declaration",
+  "dev": "tsup --watch",
+  "typecheck": "tsc --noEmit",
+  "typecheck:examples": "tsc --noEmit --project tsconfig.exampleCode.json"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -28,6 +27,7 @@
   "devDependencies": {
     "@types/dotenv": "^8.2.3",
     "tsup": "^8.5.1",
-    "tsx": "^4.23.1"
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
   }
 }
