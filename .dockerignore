@@ -1,0 +1,33 @@
+# dependencies - reintalled fresh inside the image, never copied from host
+node_modules
+**/node_modules
+
+
+# build output - regenerated inside the image 
+**/dist
+**/.turbo
+
+# version control
+.git 
+.gitignore
+
+# secrets - NEVER let these leak into an image layer 
+.env 
+**/.env
+**/.env.*
+!**/.env.example
+
+
+# editor/OS noise
+.vscode
+.idea
+.DS_Store
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# docs - not needed at runtime
+**/*.md 
+docs

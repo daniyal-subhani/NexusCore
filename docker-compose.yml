@@ -1,91 +1,120 @@
 name: nexus-core
 
 services:
-  mysql:
+
+# ────────────────────────────
+# Infrastructure
+# ────────────────────────────
+
+  auth-db:
     image: mysql:8.4
+    container_name: nexus-core-auth-db 
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: nexus_auth
+      MYSQL_DATABASE: ${AUTH_DB_NAME:-nexus-core_auth_service}
+      MYSQL_USER: ${AUTH_DB_USER:-nexus-core_auth_user}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${AUTH_DB_ROOT_PASSWORD}
+    command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
     ports: 
-      - "3306:3306"
+      - "${AUTH_DB_PORT:-3306}:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - auth-db-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
     networks: [nexus-network]
-  postgress:
+
+  user-db:
     image: postgres:16
+    container_name: nexus-core-user-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nexus_users
+      POSTGRES_DB: ${USER_DB_NAME:-nexus-core_user_service}
+      POSTGRES_USER: ${USER_DB_USER:-nexus-core_user}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${USER_DB_PORT:-5432}:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - user-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER:-nexus-core_user} -d ${USER_DB_NAME:-nexus-core_user_service}"]
+      interval: 10s
       timeout: 5s
       retries: 10
-    networks: [nenux-network]
+      start_period: 15s
+    networks: [nexus-network]
   
-  mongo:
+  chat-db:
     image: mongo:7
+    container_name: nexus-core-chat-db
     restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-nexus-core_chat}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT:-27017}:27017"
     volumes:
-      -mongo-data:/data/db 
+      - chat-db-data:/data/db 
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
-      interval: 5s
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand(\"ping\").ok' --quiet"]
+      interval: 10s
       timeout: 5s
       retries: 10
-    networks:
-      - [nexus-network]
+      start_period: 20s
+    networks: [nexus-network]
   redis:
     image: redis:7-alpine
+    container_name: nexus-core-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 10s
     networks: [nexus-network]
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: nexus-core-rabbitmq
     restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASSWORD:-guest}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
     networks: [nexus-network]
-  gateway-service:
-    build: 
-      context: .
-      dockerfile: nexus-core-backend/services/gateway-service/Dockerfile
-    restart: unless-stopped
-    env_file: ./nenux-core-backend/service/gateway-service/.env 
-    ports: ["4000:4000"]
-    networks: [nenux-network]
+
+# ─────────────────────────────
+ # Application Services
+# ─────────────────────────────
+
+# Services Container
+
 
 networks:
   nexus-network:
     driver: bridge
 
 volumes:
-  mysql-data:
-  postgres-data:
-  mongo-data:
+  auth-db-data:
+  user-db-data:
+  chat-db-data:
+  redis-data:
+  rabbitmq-data:
