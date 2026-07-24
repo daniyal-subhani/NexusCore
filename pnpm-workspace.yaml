@@ -2,4 +2,7 @@ packages:
   - "nexus-core-backend/services/*"
   - "nexus-core-backend/packages/*"
 allowBuilds:
+  '@prisma/engines': true
+  bcrypt: true
   esbuild: true
+  prisma: true
