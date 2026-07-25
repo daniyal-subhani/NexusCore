@@ -1,18 +1,18 @@
 import { z } from '@nexus-core/common';
 
-export const registerSchema = z.object({
+export const RegisterSchema = z.object({
   body: z.object({
-    email: z.email(),
-    password: z.string().min(8).max(72),
+    email: z.email('Please provide a valid email address.'),
+    password: z.string().min(8, 'Password must b 8 characters long.'),
   }),
 });
 
-export const loginSchema = z.object({
+export const LoginSchema = z.object({
   body: z.object({
-    email: z.email(),
-    password: z.string().min(1),
+    email: z.email('Please provide a valid email address.'),
+    password: z.string().min(1, 'Password is required.'),
   }),
 });
 
-export type RegisterInput = z.infer<typeof registerSchema>['body'];
-export type LoginInput = z.infer<typeof loginSchema>['body'];
+export type RegisterInput = z.infer<typeof RegisterSchema>['body'];
+export type LoginInput = z.infer<typeof LoginSchema>['body'];
