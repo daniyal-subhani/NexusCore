@@ -23,11 +23,11 @@ enum AccountStatus {
 }
 
 model User {
-  id           String @id @default(uuid())
-  email        String @unique
-  passwordHash String @map("password_hash")
-  role ROLE @default(USER)
-  status AccountStatus @default(ACTIVE)
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  role          ROLE           @default(USER)
+  status        AccountStatus  @default(ACTIVE)
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   refreshTokens RefreshToken[]
@@ -37,7 +37,7 @@ model User {
 
 model RefreshToken {
   id        String   @id @default(uuid())
-  tokenId     String   @unique @map("token_id")
+  tokenId   String   @unique @map("token_id")
   userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime @map("expires_at")
