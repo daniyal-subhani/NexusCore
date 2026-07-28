@@ -75,17 +75,79 @@ export const register = async (input: RegisterInput): Promise<AuthResponse> => {
 };
 
 // Login existing user
-export const login = async (input: LoginInput): Promise<AuthTokens> =>{
+export const login = async (input: LoginInput): Promise<AuthTokens> => {
   const user = await prisma.user.findUnique({
     where: {
-      email: input.email
-    }
+      email: input.email,
+    },
   });
-  if(!user){
-    throw new HttpError(409, "Invalid Credientials.")
+  if (!user) {
+    throw new HttpError(401, 'Invalid Credientials.');
   }
   const isValidPassword = await verifyPassword(input.password, user.passwordHash);
-}
+  if (!isValidPassword) {
+    throw new HttpError(401, 'Invalid Credientials.');
+  }
+
+  const refreshTokenRecord = await createRefreshTokenInDB(user.id);
+  const accessToken = signAccessToken({
+    sub: user.id,
+    email: user.email,
+  });
+  const refreshToken = signRefreshToken({
+    sub: user.id,
+    tokenId: refreshTokenRecord.id,
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+// rotate refresh token & issue a new Access Token
+export const refreshToken = async (token: string): Promise<AuthTokens> => {
+  const payload = verifyRefreshToken(token);
+
+  const tokenRecord = await prisma.refreshToken.findUnique({
+    where: {
+      tokenId: payload.tokenId,
+    },
+  });
+  if (!tokenRecord || tokenRecord.userId !== payload.sub) {
+    throw new HttpError(401, 'Invalid refresh token.');
+  }
+  if (tokenRecord.expiresAt.getTime() < Date.now()) {
+    throw new HttpError(401, 'Refresh token has expired.');
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: payload.sub,
+    },
+  });
+  if (!user) {
+    logger.warn({ userId: payload.sub }, 'User missing for valid refresh token session');
+    throw new HttpError(401, 'Invalid refresh token.');
+  }
+  // token rotation: old token delete karo aur naya generate karo
+  await prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
+  const newTokenRecord = await createRefreshTokenInDB(user.id);
+
+  return {
+    accessToken: signAccessToken({ sub: user.id, email: user.email }),
+    refreshToken: signRefreshToken({ sub: user.id, tokenId: newTokenRecord.tokenId }),
+  };
+};
+
+// revoke all active sessions for a user (logout all devices)
+export const revokeRefreshToken = async (userId: string): Promise<void> => {
+  await prisma.refreshToken.deleteMany({
+    where: {
+      userId,
+    },
+  });
+};
 
 // helper to persist refresh tokens to DB. supports transactional clients (`tx).
 const createRefreshTokenInDB = async (userId: string, txClient?: PrismaTransactionClient) => {
