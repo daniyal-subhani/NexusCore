@@ -1,6 +1,6 @@
 import type {} from 'prisma';
 import { prisma } from '@/db/prisma.js';
-import { Prisma } from '@prisma/client';
+import  {Prisma}  from '@prisma/client';
 import { logger } from '@/utils/logger.js';
 import { HttpError } from '@nexus-core/common';
 import {
@@ -9,7 +9,7 @@ import {
   signRefreshToken,
   verifyPassword,
   verifyRefreshToken,
-} from '@/utils/logger.js';
+} from '@/utils/token.js';
 import { LoginInput, RegisterInput } from '@/validation/auth.schema.js';
 import { AuthResponse, AuthTokens, AuthUserPayload } from '@/types/auth.types.js';
 import crypto from 'crypto';
@@ -106,7 +106,7 @@ export const login = async (input: LoginInput): Promise<AuthTokens> => {
 };
 
 // rotate refresh token & issue a new Access Token
-export const refreshToken = async (token: string): Promise<AuthTokens> => {
+export const refreshTokens = async (token: string): Promise<AuthTokens> => {
   const payload = verifyRefreshToken(token);
 
   const tokenRecord = await prisma.refreshToken.findUnique({
