@@ -1,6 +1,6 @@
 import type {} from 'prisma';
 import { prisma } from '@/db/prisma.js';
-import  {Prisma}  from '@prisma/client';
+import  {Prisma}  from '../../generated/prisma/client.js';
 import { logger } from '@/utils/logger.js';
 import { HttpError } from '@nexus-core/common';
 import {

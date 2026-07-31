@@ -9,6 +9,15 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   BCRYPT_SALT_ROUNDS: z.string().default('12'),
+  INTERNAL_API_TOKEN: z.string().min(16),
+  AUTH_SERVICE_PORT: z.string().default('4001').transform(Number),
+
+  DATABASE_URL: z.url(),
+  DB_HOST: z.string(),
+  DB_PORT: z.string().transform(Number),
+  DB_USER: z.string(),
+  DB_PASSWORD: z.string(),
+  DB_NAME: z.string(),
 });
 type EnvType = z.infer<typeof envSchema>;
 export const env: EnvType = createEnv(envSchema, { serviceName: 'auth-service' });

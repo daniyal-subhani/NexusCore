@@ -2,31 +2,31 @@ import { z } from '@nexus-core/common';
 
 export const registerSchema = {
   body: z.object({
-    email: z.email('Please provide a valid email address.'),
-    password: z.string().min(8, 'Password must be at least 8 characters long.'),
+    email: z.email(),
+    password: z.string().min(8).max(72),
   }),
 };
 
 export const loginSchema = {
   body: z.object({
-    email: z.email('Please provide a valid email address.'),
-    password: z.string().min(1, 'Password is required.'),
+    email: z.email(),
+    password: z.string().min(1),
   }),
 };
 
 export const refreshSchema = {
   body: z.object({
-    refreshToken: z.string().min(1, 'Refresh token is required.'),
+    refreshToken: z.string().min(1),
   }),
 };
 
 export const revokeSchema = {
   body: z.object({
-    userId: z.uuid('Invalid User ID format'),
-  }),
-};
+    userId: z.uuid()
+  })
+}
 
 export type RegisterInput = z.infer<typeof registerSchema.body>;
 export type LoginInput = z.infer<typeof loginSchema.body>;
 export type RefreshInput = z.infer<typeof refreshSchema.body>;
-export type RevokeInput = z.infer<typeof revokeSchema.body>;
+export type RevokeInput = z.infer<typeof revokeSchema.body>

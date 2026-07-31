@@ -1,16 +1,25 @@
-import  {PrismaClient}  from '@prisma/client';
+import  {PrismaClient}  from '../../generated/prisma/client.js';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { logger } from '@/utils/logger.js';
 import { env } from '@/config/env.js';
 
+const adapter = new PrismaMariaDb({
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
+  connectionLimit: 5,
+})
 // 1. Declare Global Type for Node.js process to prevent multiple instances during HMR/Dev
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+// const globalForPrisma = globalThis as unknown as {
+//   prisma: PrismaClient | undefined;
+// };
 
 // 2. Reuse existing client OR instantiate a new one with optimal logging
 export const prisma =
-  globalForPrisma.prisma ??
   new PrismaClient({
+    adapter,
     log:
       env.NODE_ENV === 'development'
         ? [
@@ -22,10 +31,7 @@ export const prisma =
   });
 // 3. Bind logger in Development mode to see exact SQL queries
 if (env.NODE_ENV === 'development') {
-  globalForPrisma.prisma = prisma(
-    // Custom log format for query debugging
-    prisma as any,
-  ).$on?.('query', (e: { query: string; duration: number }) => {
+  prisma.$on?.('query', (e: { query: string; duration: number }) => {
     logger.debug({ query: e.query, duration: `${e.duration}ms` });
   });
 }

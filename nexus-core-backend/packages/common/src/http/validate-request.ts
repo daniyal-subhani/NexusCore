@@ -3,18 +3,18 @@ import { HttpError } from "../errors/http-error.js";
 import type { NextFunction, Request, Response } from "express";
 
 
-export interface RequestValidationsSchemas {
+export interface RequestValidationSchemas {
     body?: ZodType;
     params?: ZodType,
     query?: ZodType
 }
 
-export const validateRequest = (schemas: RequestValidationsSchemas) => {
+export const validateRequest = (schemas: RequestValidationSchemas) => {
     return (req: Request, _res: Response, next: NextFunction) => {
         try {
             if(schemas.body) req.body = schemas.body.parse(req.body);
             if(schemas.params) req.params = schemas.params.parse(req.params) as Request["params"];
-            if(schemas.query) req.body = schemas.query.parse(req.query) as Request["query"];
+            if(schemas.query) req.query = schemas.query.parse(req.query) as Request["query"];
             
             next();
         } catch (error) {

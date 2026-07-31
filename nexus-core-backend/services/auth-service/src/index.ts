@@ -1,28 +1,84 @@
-import {createApp} from "@/app";
-import {env} from "@/config/env.js"
-import {logger } from "@utils/logger";
-import {connectDB, disconnectDB } from "@/db/prisma";
+import { createServer } from "http";
+import { createApp } from "./app.js";
+import { env } from "./config/env.js";
+import { logger } from "./utils/logger.js";
+import { prisma } from "./db/prisma.js";
 
-async function main() {
-    await connectDB();
 
-    const app = createApp();
-    const server = app.listen(env.PORT, () => {
-        logger.info(`auth-service listening on port ${env.PORT} (${env.NODE_ENV})`);
-    });
-    function shutdown(signal: string) {
-        logger.info(`${signal} received, shutting down gracefully`);
-        server.close(async () => {
-            await disconnectDB();
-            logger.info("Server closed, DB disconnected");
-            process.exit(0);
-        })
-    }
-    process.on("SIGTERM", () => shutdown("SIGTERM"));
-    process.on("SIGINT", ()=> shutdown("SIGINT"));
+const main = async (): Promise<void> => {
+    try {
+        // 1. DB connection check
+        await prisma.$connect();
+        logger.info("Database connection established successfully (Prisma)");
+
+        // 2. Initialise Message Broker (RabbitMQ / Kafka)
+
+
+        // 3. create & listen express App
+        const app = createApp();
+        const server = createServer(app);
+
+        const port = env.AUTH_SERVICE_PORT || 3000;
+        server.listen(port, ()=> {
+            logger.info({port}, `Auth service is running on port ${port}`)
+        });
+
+        // 4. graceful shutdown handler
+        let isShuttingDown = false;
+        const shutdown = (signal:string) => {
+
+            if(isShuttingDown) return;
+            isShuttingDown = true;
+            
+            logger.info({signal}, `Received ${signal}. Starting graceful shutdown...`)
+
+            // 10s Hard-timeout safety net (stuck connections forcing container kill)
+            const forceKillTimer = setTimeout(() => {
+                logger.error("Forced shutdown due to timeout while closing connections");
+                process.exit(1);
+            }, 10000);
+            // force-kill timer unref so it won't hold the event loop alive
+            forceKillTimer.unref();
+
+            server.close((err) => {
+                if(err) {
+                    logger.error({err}, "Error closing HTTP server");
+                } else {
+                    logger.info("HTTP server stopped accepting new connections")
+                }
+                // step B: Disconnect DB & Messaginf Queues
+                Promise.all([
+                    prisma.$disconnect(),
+                    
+                ])
+                .then(() => {
+                    logger.info("Database and Publisher resources cleaned up successfully");
+                    process.exit(0)
+                })
+                .catch((error: unknown) => {
+                    logger.error({error}, "Error during resource cleanup phase");
+                    process.exit(1);
+                });
+            });
+        };
+        // signal listeners (Docker / Kubernates Termination Signals)
+        process.on("SIGINT", ()=> shutdown("SIGINT"));
+        process.on("SIGTERM", ()=> shutdown("SIGTERM"));
+
+        // global unhandled exception safety net
+        process.on("uncaughtException", (error: Error) => {
+            logger.fatal({error}, "Uncaught Exception thrown")
+            shutdown("uncaughtException")
+        });
+
+        process.on("unhandledRejection", (reason: unknown) => {
+            logger.fatal({reason}, "Unhandled Promise Rejection");
+            shutdown("unhandledRejection")
+        });
+        } catch (error) {
+            logger.fatal({error}, "Failed to start Auth Service");
+            process.exit(1);
+        }
 }
 
-main().catch((err) => {
-    logger.error(err, "Failed to start auth-service");
-    process.exit(1);
-})
+void main();

@@ -5,13 +5,17 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "private": true,
-  "exports": {
+  "exports":{
+".":
+  {
     "types": "./dist/index.d.ts",
-    "import": "./dist/index.js"
-  },
+    "import": "./dist/index.js",
+    "default": "./dist/index.js"
+  }
+},
   "scripts": {
-    "build": "tsup && tsc --project tsconfig.json --emitDeclarationOnly --declaration",
-    "dev": "tsup --watch",
+    "build": "rm -rf dist && tsc",
+    "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "typecheck:examples": "tsc --noEmit --project tsconfig.exampleCode.json"
   },
