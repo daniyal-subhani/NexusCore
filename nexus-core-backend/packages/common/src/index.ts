@@ -1,8 +1,10 @@
 export * from './env.js';
-export * from "./http/validate-request.js";
+export * from './http/validate-request.js';
 export * from './logger.js';
 export * from './errors/http-error.js';
-export * from "./http/async-handler.js"
-export * from "./http/internal-auth.js"
+export * from './http/async-handler.js';
+export * from './http/internal-auth.js';
+export * from './messaging/rabbitmq.js';
+export * from './events/user-events.js';
 export { z } from 'zod';
 export type { Logger } from 'pino';

@@ -3,9 +3,9 @@
     "compilerOptions": {
         "rootDir": "src",
         "outDir": "dist",
-        "baseUrl": ".",
-        "paths": {"@/*": ["src/*"]}
+        // "baseUrl": ".",
+        "paths": {"@/*": ["./src/*"]}
     },
     "include": ["src"],
-    "references": [{"path": "../../packages/common"}]
+    // "references": [{"path": "../../packages/common"}]
 }

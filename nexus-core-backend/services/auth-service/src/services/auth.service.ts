@@ -13,6 +13,7 @@ import {
 import { LoginInput, RegisterInput } from '@/validation/auth.schema.js';
 import { AuthResponse, AuthTokens, AuthUserPayload } from '@/types/auth.types.js';
 import crypto from 'crypto';
+import { publishUserEvent } from '@/messaging/event-publisher.js';
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
 type PrismaTransactionClient = Prisma.TransactionClient;
@@ -40,6 +41,9 @@ export const register = async (input: RegisterInput): Promise<AuthResponse> => {
           passwordHash: hashPassword,
         },
       });
+      await publishUserEvent(user.id, user.email).catch((err) => {
+        logger.error({err, userId: user.id}, "Failed to publish user.registered event")
+      })
       // created user ki id pass ki  helper function ko
       const createdTokenRecord = await createRefreshTokenInDB(createdUser.id, tx);
       // transaction se dono records bahar return ker diye

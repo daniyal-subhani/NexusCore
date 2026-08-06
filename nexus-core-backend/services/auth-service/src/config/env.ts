@@ -18,6 +18,7 @@ const envSchema = z.object({
   DB_USER: z.string(),
   DB_PASSWORD: z.string(),
   DB_NAME: z.string(),
+  RABBITMQ_URL: z.url(),
 });
 type EnvType = z.infer<typeof envSchema>;
 export const env: EnvType = createEnv(envSchema, { serviceName: 'auth-service' });
