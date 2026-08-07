@@ -11,6 +11,11 @@ export const conversationController = {
     const conversations = await conversationService.listForUser(req.params.userId as string);
     res.status(201).json(conversations);
   },
+  async sendMessage(req: Request, res:Response) {
+    const {senderId, content} = req.body; 
+    const message = await messageService.send(req.params.id as string , senderId, content);
+    res.status(201).json(message);
+  },
   async listMessages(req: Request, res: Response) {
     const messages = await messageService.list(req.params.id as string);
     res.status(200).json(messages);
