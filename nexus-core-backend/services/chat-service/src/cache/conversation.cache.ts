@@ -7,5 +7,9 @@ export const conversationCache = {
     async get(userId: string):Promise <Conversation[] | null> {
         const cached = await redis.get(`user:${userId}:conversations`);
         return cached ? JSON.parse(cached) : null;
-    }
+    },
+    async set(userId: string, conversations: Conversation[]):Promise<void> {
+        await redis.set(`user:${userId}:conversations`, JSON.stringify(conversations), "EX", TTL_SECONDS);
+    },
+    
 }
