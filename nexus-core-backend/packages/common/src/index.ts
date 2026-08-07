@@ -6,5 +6,6 @@ export * from './http/async-handler.js';
 export * from './http/internal-auth.js';
 export * from './messaging/rabbitmq.js';
 export * from './events/user-events.js';
+export * from './http/auth.js'
 export { z } from 'zod';
 export type { Logger } from 'pino';
