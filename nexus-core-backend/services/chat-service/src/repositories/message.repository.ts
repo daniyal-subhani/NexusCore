@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import type { Message } from '@/types/conversations.js';
 
 export const messageRepository = {
-  async create(conversationId: stringc, senderId: string, content: string): Promise<Message> {
+  async create(conversationId: string, senderId: string, content: string): Promise<Message> {
     const message: Message = {
       _id: randomUUID(),
       conversationId,
