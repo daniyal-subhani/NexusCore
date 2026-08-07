@@ -5,3 +5,8 @@ import { Router } from "express";
 
 export const conversationRouter = Router();
 
+conversationRouter.post("/", validateRequest(createConversationSchema), asyncHandler(conversationController.create));
+
+conversationRouter.post("/user/:userId", asyncHandler(conversationController.listForUser));
+
+conversationRouter.post("/:id/messages", asyncHandler(conversationController.))
