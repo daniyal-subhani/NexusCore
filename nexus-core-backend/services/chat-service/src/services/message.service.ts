@@ -11,4 +11,7 @@ export const messageService = {
     }
     return messageRepository.create(conversationId, senderId, content);
   },
+  async list(conversationId: string) {
+    return messageRepository.findByConversation(conversationId);
+  },
 };
