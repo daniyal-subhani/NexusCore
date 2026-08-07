@@ -11,5 +11,7 @@ export const conversationCache = {
     async set(userId: string, conversations: Conversation[]):Promise<void> {
         await redis.set(`user:${userId}:conversations`, JSON.stringify(conversations), "EX", TTL_SECONDS);
     },
-    
+    async invalidate(userId: string):Promise<void> {
+        await redis.del(`user:${userId}:conversations`);
+    }
 }
