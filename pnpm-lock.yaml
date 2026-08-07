@@ -410,6 +410,9 @@ importers:
       helmet:
         specifier: ^8.3.0
         version: 8.3.0
+      jsonwebtoken:
+        specifier: ^9.0.3
+        version: 9.0.3
     devDependencies:
       '@types/cors':
         specifier: ^2.8.19
@@ -417,6 +420,9 @@ importers:
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       tsc-alias:
         specifier: ^1.9.1
         version: 1.9.1
