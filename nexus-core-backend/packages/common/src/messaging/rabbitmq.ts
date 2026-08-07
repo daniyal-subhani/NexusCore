@@ -32,3 +32,35 @@ export async function disconnectRabbitMQ(): Promise<void> {
     await channel?.close();
     await connection?.close();
 }
+
+
+// packages/common/src/messaging/rabbitmq.ts mein add karo:
+
+export async function consumeEvents(
+  queueName: string,
+  routingKeys: string[],
+  onMessage: (payload: unknown) => Promise<void>,
+  logger: Logger,
+): Promise<void> {
+  if (!channel) throw new Error('RabbitMQ channel not initialized');
+
+  await channel.assertQueue(queueName, { durable: true });
+
+  for (const key of routingKeys) {
+    await channel.bindQueue(queueName, EVENTS_EXCHANGE, key);
+  }
+
+  channel.consume(queueName, async (msg) => {
+    if (!msg) return;
+    try {
+      const payload = JSON.parse(msg.content.toString());
+      await onMessage(payload);
+      channel!.ack(msg);   // successfully processed — RabbitMQ ko batao message hata do
+    } catch (err) {
+      logger.error({ err }, 'Failed to process message, nack-ing');
+      channel!.nack(msg, false, false);   // process nahi kar paye — dead-letter (abhi simple: discard)
+    }
+  });
+
+  logger.info({ queueName, routingKeys }, 'Consumer listening');
+}

@@ -21,6 +21,7 @@ export const createApp = (): Application => {
 
  // App Route Registration
   registerRoutes(app);
+  
 
   // 404 Catch-All Handler
   app.use((_req, res) => {
