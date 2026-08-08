@@ -39,7 +39,7 @@ export async function disconnectRabbitMQ(): Promise<void> {
 export async function consumeEvents(
   queueName: string,
   routingKeys: string[],
-  onMessage: (payload: unknown) => Promise<void>,
+  onMessage: (payload: unknown, routingKey:string) => Promise<void>,
   logger: Logger,
 ): Promise<void> {
   if (!channel) throw new Error('RabbitMQ channel not initialized');
@@ -54,7 +54,7 @@ export async function consumeEvents(
     if (!msg) return;
     try {
       const payload = JSON.parse(msg.content.toString());
-      await onMessage(payload);
+      await onMessage(payload, msg.fields.routingKey);
       channel!.ack(msg);   // successfully processed — RabbitMQ ko batao message hata do
     } catch (err) {
       logger.error({ err }, 'Failed to process message, nack-ing');
