@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { asyncHandler, validateRequest } from '@nexus-core/common';
 import { requireAuth } from '@/middleware/require-auth.js';
 import { chatController } from '@/controllers/chat.controller.js';
-import { createConversationSchema, sendMessageSchema } from '@/validation/message.schema.js';
+import { createConversationSchema, sendMessageSchema } from '@/validation/chat.schema.js';
 
 export const chatRouter = Router();
 
