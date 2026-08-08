@@ -1,6 +1,8 @@
+import { publishMessageSent } from '@/messaging/event-publisher.js';
 import { getInfo } from '@/realtime/socket.js';
 import { conversationRepository } from '@/repositories/conversation.repository.js';
 import { messageRepository } from '@/repositories/message.repository.js';
+import { logger } from '@/utils/logger.js';
 import { HttpError } from '@nexus-core/common';
 
 
@@ -14,6 +16,9 @@ export const messageService = {
     }
     const message =  messageRepository.create(conversationId, senderId, content);
     getInfo().to(conversationId).emit('message:new', message); // real-time push, saare room-members ko
+    publishMessageSent(message, conversation.participantIds).catch((err) => {
+      logger.error({err, messageId: message._id}, "Failed to publish message.sent event") // publish fail hone se message-send fail nahi hona chahiye
+    })
     return message
   },
   async list(conversationId: string) {
