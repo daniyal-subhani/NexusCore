@@ -6,6 +6,7 @@ const envSchema = z.object({
   MONGO_URL: z.url(),
   REDIS_URL: z.url(),
   RABBITMQ_URL: z.url(),
+  JWT_ACCESS_SECRET: z.string(),
 });
 
 type EnvType = z.infer<typeof envSchema>;
