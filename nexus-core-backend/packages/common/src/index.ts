@@ -7,5 +7,6 @@ export * from './http/internal-auth.js';
 export * from './messaging/rabbitmq.js';
 export * from './events/user-events.js';
 export * from './http/auth.js'
+export * from "./events/chat-event.js"
 export { z } from 'zod';
 export type { Logger } from 'pino';
